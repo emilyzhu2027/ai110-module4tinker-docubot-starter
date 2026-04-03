@@ -41,7 +41,13 @@ class DocuBot:
                 with open(path, "r", encoding="utf8") as f:
                     text = f.read()
                 filename = os.path.basename(path)
-                docs.append((filename, text))
+
+                # Split the document into chunks by newline character
+                chunks = text.split('\n')
+                for chunk in chunks:
+                    chunk = chunk.strip()
+                    if chunk:  # Only add non-empty chunks
+                        docs.append((filename, chunk))
         return docs
 
     # -----------------------------------------------------------
@@ -53,6 +59,8 @@ class DocuBot:
         TODO (Phase 1):
         Build a tiny inverted index mapping lowercase words to the documents
         they appear in.
+        
+        documents = list of tuples (filename, text)
 
         Example structure:
         {
@@ -65,6 +73,14 @@ class DocuBot:
         """
         index = {}
         # TODO: implement simple indexing
+        # For each document, split text into words, lowercase them, and add to index
+        for filename, text in documents:
+            words = text.split()  # Simple split, can be improved with regex
+            for word in words:
+                word = word.lower().strip(".,!?()[]{}\"'")  # Basic cleanup
+                if word not in index:
+                    index[word] = set()
+                index[word].add(filename)
         return index
 
     # -----------------------------------------------------------
@@ -82,18 +98,42 @@ class DocuBot:
         - Return the count as the score
         """
         # TODO: implement scoring
-        return 0
+        score = 0
+        # For simplicity, we can just count the number of query words that appear in the text
+        for word in query.split():
+            word = word.lower().strip(".,!?()[]{}\"'")  # Basic cleanup
+            if word in text.lower():
+                score += 1  # Found a match, return a score of 1
+        return score
 
     def retrieve(self, query, top_k=3):
         """
-        TODO (Phase 1):
         Use the index and scoring function to select top_k relevant document snippets.
-
-        Return a list of (filename, text) sorted by score descending.
+        Returns a list of (filename, text) sorted by score descending, or None if no useful context is found.
         """
         results = []
-        # TODO: implement retrieval logic
-        return results[:top_k]
+        res = {}
+        for word in query.split():
+            word = word.lower().strip(".,!?()[]{}\"'")  # Basic cleanup
+            if word in self.index:
+                for (filename, text) in self.index[word]:
+                    score = self.score_document(query, text)
+                    if (filename, text) not in res:
+                        res[(filename, text)] = score
+                    else:
+                        res[(filename, text)] += score
+        sorted_results = sorted(res.items(), key=lambda x: x[1], reverse=True)
+        for (filename, text), score in sorted_results:
+            results.append((filename, text))
+
+        # Guardrail: refuse if no results or all top_k scores are zero
+        if not results:
+            return None
+        top_results = results[:top_k]
+        all_zero = all(self.score_document(query, text) == 0 for _, text in top_results)
+        if all_zero:
+            return None
+        return top_results
 
     # -----------------------------------------------------------
     # Answering Modes

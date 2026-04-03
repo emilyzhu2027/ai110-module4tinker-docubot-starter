@@ -15,6 +15,19 @@ It can operate in three different modes:
 The docs folder contains realistic developer documents (API reference, authentication notes, database notes), but these files are **just text**. They support retrieval experiments and do not require students to set up any backend systems.
 
 ---
+## TF Task
+* The core concept students needed to understand
+    * Understanding the differences between three different AI reasoning techniques and how retrieval can impact/augment AI performance
+* Where students are most likely to struggle
+    * Identifying the best retrieval method implementation that balances between implementability and effectiveness
+* Where AI was helpful vs misleading
+    * AI was helpful in brainstorming various retrieval methods and understanding how retrieval can contribute to an AI system's understanding of the problem
+    * AI was misleading when implementing the guardrail portion of the project, because it struggled to understand what guardrails meant in this situation and where best to place these guardrails as the concept is somewhat up to interpretation.
+* One way they would guide a student without giving the answer
+    * Suggest thinking through with teammates or with AI how to chunk the documents into manageable and interpretable text chunks for the retrieval, so that it is both user-readable and useful context for the LLM.
+
+
+---
 
 ## Setup
 
